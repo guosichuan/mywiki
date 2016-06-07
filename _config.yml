@@ -1,0 +1,24 @@
+# Document:
+# http://simiki.org/docs/configuration.html
+
+url: http://simiki.org
+title: Simiki
+keywords: simiki, wiki, python, simple
+description: Simiki is a simple static site generator for wiki.
+author: Guosichuan
+
+root: /
+source: content
+destination: output
+themes_dir: themes
+theme: cod
+
+category:
+  - name: linux  # 目录名
+    label: Linux/运维  # 目录的别名, 生成首页时可以使用
+  - name: database
+    label: 数据库
+
+default_ext: md
+pygments: true
+debug: false

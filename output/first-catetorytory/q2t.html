@@ -1,0 +1,271 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/static/css/tango.css">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <title>Q2t - Simiki</title>
+        <meta name="keywords" content="simiki, wiki, python, simple"/>
+        <meta name="description" content="Simiki is a simple static site generator for wiki."/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/">Home</a>&nbsp;»&nbsp;<a href="/#first-catetorytory">first-catetorytory</a>&nbsp;»&nbsp;Q2t</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Q2t</div>
+  <div id="content">
+  <h1 id="q2">Q2需求</h1>
+<p>@(bigdata)[hive, mysql]</p>
+<h3 id="updateid">来自updateId表</h3>
+<ul>
+<li>各应用分平台用户总数</li>
+<li>总数是多长时间内的总数,每个月统计一回</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>day</th>
+<th>app</th>
+<th align="right">platform</th>
+<th>usr_num</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>field1</td>
+<td>field1</td>
+<td align="right">field2</td>
+<td>field3</td>
+</tr>
+</tbody>
+</table>
+<div class="hlcode"><pre><span class="k">select</span> <span class="s1">&#39;$STAT_DAY&#39;</span> <span class="k">as</span> <span class="k">day</span><span class="p">,</span><span class="n">app</span><span class="p">,</span><span class="n">platform</span><span class="p">,</span><span class="k">count</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">from</span> <span class="p">(</span>
+<span class="k">select</span> <span class="n">upid</span><span class="p">.</span><span class="n">app</span><span class="p">,</span>
+<span class="k">CASE</span>
+  <span class="k">WHEN</span> <span class="n">upid</span><span class="p">.</span><span class="n">idfa</span> <span class="k">is</span> <span class="k">not</span> <span class="k">NULL</span> <span class="k">and</span> <span class="n">upid</span><span class="p">.</span><span class="n">idfa</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span>  <span class="k">THEN</span> <span class="s1">&#39;ios&#39;</span>
+  <span class="k">WHEN</span> <span class="n">upid</span><span class="p">.</span><span class="n">imei</span> <span class="k">is</span> <span class="k">not</span> <span class="k">NULL</span> <span class="k">and</span> <span class="n">upid</span><span class="p">.</span><span class="n">imei</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span>  <span class="k">THEN</span> <span class="s1">&#39;android&#39;</span>
+  <span class="k">ELSE</span> <span class="s1">&#39;other&#39;</span>
+<span class="k">END</span> <span class="k">as</span> <span class="n">platform</span> <span class="k">from</span> <span class="n">mobile_day_id_lastest</span> <span class="n">upid</span>
+ <span class="p">)</span><span class="n">t</span> <span class="k">group</span> <span class="k">by</span> <span class="n">app</span><span class="p">,</span><span class="n">platform</span> <span class="k">order</span> <span class="k">by</span> <span class="n">app</span><span class="p">,</span><span class="n">platform</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="o">`</span><span class="n">tb_usr_stat</span><span class="o">`</span> <span class="p">(</span>
+  <span class="o">`</span><span class="k">day</span><span class="o">`</span> <span class="nb">date</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">app_code</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">platform</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">usr_num</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>
+<span class="p">)</span>  <span class="n">ENGINE</span><span class="o">=</span><span class="n">MyISAM</span> <span class="k">DEFAULT</span> <span class="n">CHARSET</span><span class="o">=</span><span class="n">utf8</span>
+</pre></div>
+
+
+<ul>
+<li>各应用分平台新用户（按日、月、全部），并按地域分布</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>day/month/all</th>
+<th>app</th>
+<th align="right">platform</th>
+<th>province</th>
+<th align="left">city</th>
+<th align="left">new_usr_num</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>field0</td>
+<td>field1</td>
+<td align="right">field2</td>
+<td>field3</td>
+<td align="left">field4</td>
+<td align="left">field5</td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>需要第一次登录时间</li>
+</ol>
+<div class="hlcode"><pre><span class="k">select</span> <span class="s1">&#39;2016-06-01&#39;</span> <span class="k">as</span> <span class="k">day</span> <span class="p">,</span><span class="n">app</span><span class="p">,</span><span class="n">platform</span><span class="p">,</span><span class="n">province</span><span class="p">,</span><span class="n">city</span><span class="p">,</span> <span class="k">count</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">from</span>
+<span class="p">(</span><span class="k">select</span> <span class="n">upid</span><span class="p">.</span><span class="n">app</span><span class="p">,</span>
+<span class="k">CASE</span>
+  <span class="k">WHEN</span> <span class="n">upid</span><span class="p">.</span><span class="n">idfa</span> <span class="k">is</span> <span class="k">not</span> <span class="k">NULL</span> <span class="k">and</span> <span class="n">upid</span><span class="p">.</span><span class="n">idfa</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span>  <span class="k">THEN</span> <span class="s1">&#39;ios&#39;</span>
+  <span class="k">WHEN</span> <span class="n">upid</span><span class="p">.</span><span class="n">imei</span> <span class="k">is</span> <span class="k">not</span> <span class="k">NULL</span> <span class="k">and</span> <span class="n">upid</span><span class="p">.</span><span class="n">imei</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span>  <span class="k">THEN</span> <span class="s1">&#39;android&#39;</span>
+  <span class="k">ELSE</span> <span class="s1">&#39;other&#39;</span>
+<span class="k">END</span> <span class="k">as</span> <span class="n">platform</span><span class="p">,</span><span class="n">province</span><span class="p">,</span><span class="n">city</span> <span class="k">from</span> <span class="n">mobile_day_id_lastest</span> <span class="n">upid</span> <span class="k">where</span> <span class="n">first_uptime</span><span class="o">&gt;=</span> <span class="mi">1467334800</span> <span class="k">and</span> <span class="n">first_uptime</span> <span class="o">&lt;</span> <span class="mi">1464710400</span> <span class="p">)</span> <span class="n">t</span>
+<span class="k">group</span> <span class="k">by</span> <span class="n">app</span><span class="p">,</span><span class="n">platform</span><span class="p">,</span><span class="n">province</span><span class="p">,</span><span class="n">city</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="o">`</span><span class="n">tb_newusr_month</span><span class="o">`</span> <span class="p">(</span>
+  <span class="o">`</span><span class="k">day</span><span class="o">`</span> <span class="nb">date</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">app_code</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">platform</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">province</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">city</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">new_usr_num</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>
+<span class="p">)</span>  <span class="n">ENGINE</span><span class="o">=</span><span class="n">MyISAM</span> <span class="k">DEFAULT</span> <span class="n">CHARSET</span><span class="o">=</span><span class="n">utf8</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="o">`</span><span class="n">tb_newusr_day</span><span class="o">`</span> <span class="p">(</span>
+  <span class="o">`</span><span class="k">day</span><span class="o">`</span> <span class="nb">date</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">app_code</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">platform</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">province</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">city</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">new_usr_num</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>
+<span class="p">)</span>  <span class="n">ENGINE</span><span class="o">=</span><span class="n">MyISAM</span> <span class="k">DEFAULT</span> <span class="n">CHARSET</span><span class="o">=</span><span class="n">utf8</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="o">`</span><span class="n">tb_newusr</span><span class="o">`</span> <span class="p">(</span>
+  <span class="o">`</span><span class="k">day</span><span class="o">`</span> <span class="nb">date</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">app_code</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">platform</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">province</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">city</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">new_usr_num</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>
+<span class="p">)</span>  <span class="n">ENGINE</span><span class="o">=</span><span class="n">MyISAM</span> <span class="k">DEFAULT</span> <span class="n">CHARSET</span><span class="o">=</span><span class="n">utf8</span>
+</pre></div>
+
+
+<ul>
+<li>各应用分平台苏醒用户
+| day| app|     platform|   province|   city|   revive_usr_num|
+| :-------- | :-------- | --------:| :------: |:------: |:------: |
+| field0   | field1    |   field2 |  field3  |field4  |field5  |</li>
+</ul>
+<div class="hlcode"><pre><span class="k">select</span> <span class="n">app</span><span class="p">,</span><span class="err">平台</span> <span class="k">count</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">from</span> <span class="n">mobile_day_id_lastest</span> <span class="k">where</span> <span class="n">revive_date</span> <span class="n">betweeen</span><span class="p">(</span><span class="n">day1</span><span class="p">,</span><span class="n">day2</span><span class="p">)</span> <span class="k">group</span> <span class="k">by</span> <span class="n">app</span><span class="p">,</span><span class="err">平台</span>
+</pre></div>
+
+
+<ul>
+<li>有urs账号的用户比例</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>month</th>
+<th>app</th>
+<th>platform</th>
+<th>urs_num</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>field0</td>
+<td>field1</td>
+<td>field1</td>
+<td>field1</td>
+</tr>
+</tbody>
+</table>
+<div class="hlcode"><pre><span class="k">select</span> <span class="n">app</span><span class="p">,</span><span class="err">平台</span> <span class="k">count</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">from</span> <span class="n">mobile_day_id_lastest</span> <span class="k">where</span> <span class="n">urs</span> <span class="k">is</span> <span class="k">not</span> <span class="k">null</span> <span class="k">group</span> <span class="k">by</span> <span class="n">app</span><span class="p">,</span><span class="err">平台</span>
+</pre></div>
+
+
+<ul>
+<li>各应用各个版本的占比</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>month</th>
+<th>app</th>
+<th>platform</th>
+<th>appver</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>field0</td>
+<td>field1</td>
+<td>field1</td>
+<td>field1</td>
+</tr>
+</tbody>
+</table>
+<div class="hlcode"><pre><span class="k">select</span> <span class="n">app</span><span class="p">,</span><span class="err">平台</span><span class="p">,</span><span class="n">appver</span><span class="p">,</span><span class="k">count</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">from</span> <span class="n">mobile_day_id_update</span> <span class="k">group</span> <span class="k">by</span> <span class="n">app</span><span class="p">,</span><span class="err">平台</span><span class="p">,</span><span class="n">appver</span>
+</pre></div>
+
+
+<p>15、新闻客户端与其他app用户重合度</p>
+<h3 id="adlog">来自Adlog表</h3>
+<ul>
+<li>各应用分平台DAU，</li>
+</ul>
+<div class="hlcode"><pre><span class="k">select</span> <span class="k">day</span><span class="p">,</span><span class="n">app_id</span><span class="p">,</span><span class="n">platform</span><span class="p">,</span><span class="k">count</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="n">ad</span><span class="p">.</span><span class="k">day</span><span class="p">,</span><span class="n">ads</span><span class="p">.</span><span class="n">app_id</span><span class="p">,</span><span class="n">ads</span><span class="p">.</span><span class="n">platform</span><span class="p">,</span><span class="n">ad</span><span class="p">.</span><span class="n">deviceid</span> <span class="k">from</span> <span class="n">mobile_ad_space</span> <span class="n">ads</span> <span class="k">inner</span> <span class="k">join</span> <span class="p">(</span><span class="k">select</span> <span class="k">day</span><span class="p">,</span><span class="n">deviceid</span><span class="p">,</span><span class="n">flightid</span> <span class="k">from</span> <span class="n">mobile_day_adlog</span> <span class="k">where</span> <span class="k">day</span><span class="o">=</span><span class="s1">&#39;$STAT_DAY&#39;</span><span class="p">)</span> <span class="n">ad</span> <span class="k">on</span> <span class="k">cast</span><span class="p">(</span><span class="n">ads</span><span class="p">.</span><span class="n">space_id</span> <span class="k">as</span> <span class="n">string</span><span class="p">)</span><span class="o">=</span><span class="n">ad</span><span class="p">.</span><span class="n">flightid</span>   <span class="k">group</span> <span class="k">by</span> <span class="n">ad</span><span class="p">.</span><span class="k">day</span><span class="p">,</span><span class="n">ads</span><span class="p">.</span><span class="n">app_id</span><span class="p">,</span><span class="n">ads</span><span class="p">.</span><span class="n">platform</span><span class="p">,</span><span class="n">ad</span><span class="p">.</span><span class="n">deviceid</span><span class="p">)</span> <span class="n">day_active</span> <span class="k">group</span> <span class="k">by</span> <span class="k">day</span><span class="p">,</span><span class="n">app_id</span><span class="p">,</span><span class="n">platform</span> <span class="k">order</span> <span class="k">by</span> <span class="k">day</span><span class="p">,</span><span class="n">app_id</span><span class="p">,</span><span class="n">platform</span><span class="p">;</span>
+</pre></div>
+
+
+<ul>
+<li>各应用分平台DAU,并按地域分布</li>
+</ul>
+<div class="hlcode"><pre><span class="k">select</span> <span class="k">day</span><span class="p">,</span><span class="n">app_id</span><span class="p">,</span><span class="n">platform</span><span class="p">,</span><span class="n">province</span><span class="p">,</span><span class="n">city</span><span class="p">,</span><span class="k">count</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="n">ad</span><span class="p">.</span><span class="k">day</span><span class="p">,</span><span class="n">ads</span><span class="p">.</span><span class="n">app_id</span><span class="p">,</span><span class="n">ads</span><span class="p">.</span><span class="n">platform</span><span class="p">,</span><span class="n">ad</span><span class="p">.</span><span class="n">province</span><span class="p">,</span><span class="n">ad</span><span class="p">.</span><span class="n">city</span><span class="p">,</span><span class="n">ad</span><span class="p">.</span><span class="n">deviceid</span> <span class="k">from</span> <span class="n">mobile_ad_space</span> <span class="n">ads</span> <span class="k">inner</span> <span class="k">join</span> <span class="p">(</span><span class="k">select</span> <span class="k">day</span><span class="p">,</span><span class="n">deviceid</span><span class="p">,</span><span class="n">flightid</span><span class="p">,</span><span class="n">province</span><span class="p">,</span><span class="n">city</span> <span class="k">from</span> <span class="n">mobile_day_adlog</span> <span class="k">where</span> <span class="k">day</span><span class="o">=</span><span class="s1">&#39;$STAT_DAY&#39;</span><span class="p">)</span> <span class="n">ad</span> <span class="k">on</span> <span class="k">cast</span><span class="p">(</span><span class="n">ads</span><span class="p">.</span><span class="n">space_id</span> <span class="k">as</span> <span class="n">string</span><span class="p">)</span><span class="o">=</span><span class="n">ad</span><span class="p">.</span><span class="n">flightid</span>   <span class="k">group</span> <span class="k">by</span> <span class="n">ad</span><span class="p">.</span><span class="k">day</span><span class="p">,</span><span class="n">ads</span><span class="p">.</span><span class="n">app_id</span><span class="p">,</span><span class="n">ads</span><span class="p">.</span><span class="n">platform</span><span class="p">,</span><span class="n">ad</span><span class="p">.</span><span class="n">province</span><span class="p">,</span><span class="n">ad</span><span class="p">.</span><span class="n">city</span><span class="p">,</span><span class="n">ad</span><span class="p">.</span><span class="n">deviceid</span><span class="p">)</span> <span class="n">day_active</span> <span class="k">group</span> <span class="k">by</span> <span class="k">day</span><span class="p">,</span><span class="n">app_id</span><span class="p">,</span><span class="n">platform</span><span class="p">,</span><span class="n">province</span><span class="p">,</span><span class="n">city</span> <span class="k">order</span> <span class="k">by</span> <span class="k">day</span><span class="p">,</span><span class="n">app_id</span><span class="p">,</span><span class="n">platform</span><span class="p">,</span><span class="n">province</span><span class="p">,</span><span class="n">city</span><span class="p">;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="o">`</span><span class="n">tb_dau_by_loc</span><span class="o">`</span> <span class="p">(</span>
+  <span class="o">`</span><span class="k">day</span><span class="o">`</span> <span class="nb">date</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">appid</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">platform</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">province</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">city</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">dau</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">sqoop</span> <span class="n">export</span> <span class="c1">--connect jdbc:mysql://$HOST:3306/sqoop --username $USER --password $PASS --table $MYSQL_TABLE  --export-dir /user/mad/mobilead/hql_output/dau_by_loc/$STAT_DAY --fields-terminated-by &#39;\0001&#39;</span>
+</pre></div>
+
+
+<ul>
+<li>各应用分平台MAU</li>
+</ul>
+<div class="hlcode"><pre><span class="k">select</span> <span class="s1">&#39;2016-06-01&#39;</span> <span class="k">as</span> <span class="k">day</span><span class="p">,</span><span class="n">app_id</span><span class="p">,</span><span class="n">platform</span><span class="p">,</span><span class="k">count</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="n">ads</span><span class="p">.</span><span class="n">app_id</span><span class="p">,</span><span class="n">ads</span><span class="p">.</span><span class="n">platform</span><span class="p">,</span><span class="n">ad</span><span class="p">.</span><span class="n">deviceid</span> <span class="k">from</span> <span class="n">mobile_ad_space</span> <span class="n">ads</span> <span class="k">inner</span> <span class="k">join</span> <span class="p">(</span><span class="k">select</span> <span class="n">deviceid</span><span class="p">,</span><span class="n">flightid</span> <span class="k">from</span> <span class="n">mobile_day_adlog</span> <span class="k">where</span> <span class="k">day</span><span class="o">&gt;=</span><span class="s1">&#39;2016-05-01&#39;</span> <span class="k">and</span> <span class="k">day</span><span class="o">&lt;</span><span class="s1">&#39;2016-06-01&#39;</span><span class="p">)</span> <span class="n">ad</span> <span class="k">on</span> <span class="k">cast</span><span class="p">(</span><span class="n">ads</span><span class="p">.</span><span class="n">space_id</span> <span class="k">as</span> <span class="n">string</span><span class="p">)</span><span class="o">=</span><span class="n">ad</span><span class="p">.</span><span class="n">flightid</span>   <span class="k">group</span> <span class="k">by</span> <span class="n">ads</span><span class="p">.</span><span class="n">app_id</span><span class="p">,</span><span class="n">ads</span><span class="p">.</span><span class="n">platform</span><span class="p">,</span><span class="n">ad</span><span class="p">.</span><span class="n">deviceid</span><span class="p">)</span> <span class="n">month_active</span> <span class="k">group</span> <span class="k">by</span> <span class="n">app_id</span><span class="p">,</span><span class="n">platform</span> <span class="k">order</span> <span class="k">by</span> <span class="n">app_id</span><span class="p">,</span><span class="n">platform</span><span class="p">;</span>
+</pre></div>
+
+
+<ul>
+<li>新闻客户端启动、左滑、封面故事</li>
+</ul>
+<div class="hlcode"><pre><span class="k">select</span> <span class="n">flightid</span><span class="p">,</span><span class="n">tag</span><span class="p">,</span><span class="k">count</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">from</span> <span class="n">mobile_day_adlog</span> <span class="k">where</span> <span class="n">urs</span> <span class="k">is</span> <span class="k">not</span> <span class="k">null</span> <span class="k">and</span> <span class="k">day</span><span class="o">=</span><span class="s1">&#39;&#39;</span> <span class="k">and</span> <span class="n">app</span><span class="o">=</span><span class="mi">133</span> <span class="k">group</span> <span class="k">by</span> <span class="n">flightid</span><span class="p">,</span><span class="n">tag</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="k">select</span> <span class="k">day</span><span class="p">,</span><span class="n">app_id</span><span class="p">,</span><span class="n">platform</span><span class="p">,</span><span class="n">tag</span><span class="p">,</span><span class="k">count</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="n">ad</span><span class="p">.</span><span class="k">day</span><span class="p">,</span><span class="n">ads</span><span class="p">.</span><span class="n">app_id</span><span class="p">,</span><span class="n">ads</span><span class="p">.</span><span class="n">platform</span><span class="p">,</span><span class="n">ad</span><span class="p">.</span><span class="n">tag</span> <span class="k">from</span> <span class="n">mobile_ad_space</span> <span class="n">ads</span> <span class="k">inner</span> <span class="k">join</span> <span class="p">(</span><span class="k">select</span> <span class="k">day</span><span class="p">,</span><span class="n">flightid</span><span class="p">,</span><span class="n">tag</span> <span class="k">from</span> <span class="n">mobile_day_adlog</span> <span class="k">where</span> <span class="k">day</span><span class="o">=</span><span class="s1">&#39;2016-05-31&#39;</span><span class="p">)</span> <span class="n">ad</span> <span class="k">on</span> <span class="k">cast</span><span class="p">(</span><span class="n">ads</span><span class="p">.</span><span class="n">space_id</span> <span class="k">as</span> <span class="n">string</span><span class="p">)</span><span class="o">=</span><span class="n">ad</span><span class="p">.</span><span class="n">flightid</span><span class="p">)</span> <span class="n">day_num</span> <span class="k">group</span> <span class="k">by</span> <span class="k">day</span><span class="p">,</span><span class="n">app_id</span><span class="p">,</span><span class="n">platform</span><span class="p">,</span><span class="n">tag</span> <span class="k">order</span> <span class="k">by</span> <span class="k">day</span><span class="p">,</span><span class="n">app_id</span><span class="p">,</span><span class="n">platform</span><span class="p">,</span><span class="n">tag</span><span class="p">;</span>
+</pre></div>
+
+
+<p>-文章页图文用户真正看到的比例</p>
+<div class="hlcode"><pre><span class="k">select</span> <span class="n">flightid</span><span class="p">,</span><span class="k">count</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">from</span> <span class="n">mobile_day_adlog</span> <span class="k">where</span> <span class="n">seen</span> <span class="k">is</span> <span class="k">not</span> <span class="k">null</span> <span class="k">and</span> <span class="k">day</span><span class="o">=</span><span class="s1">&#39;&#39;</span> <span class="k">and</span> <span class="n">app</span><span class="o">=</span><span class="mi">133</span> <span class="k">group</span> <span class="k">by</span> <span class="n">flightid</span>
+</pre></div>
+
+
+<p>13、单用户各栏目刷新次数 各栏目第四条信息流去重曝光/各栏目刷新次数，
+- refreshtime字段意义？
+- 如何统计的刷新次数和去重曝光？</p>
+<h3 id="daid">验证daid是否能在两个应用通用</h3>
+<p>select * from (select daid,count(1) as c from (select daid,app from mobile_day_id_lastest group by daid,app) t group by daid) t1 where c&gt;1;</p>
+<p>没有搜索结果，证明<strong>daid在不同应用中不一样</strong></p>
+</div>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2016 Guosichuan.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+            </span>
+        </div>
+        
+    </body>
+</html>
